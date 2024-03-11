@@ -70,4 +70,40 @@ const login = catchAsync(async (req, res, next) => {
   });
 });
 
-module.exports = { signUp, login };
+const authentication = catchAsync(async (req, res, next) => {
+  let idToken = "";
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    idToken = req.headers.authorization.split(" ")[1];
+  }
+
+  if (!idToken) {
+    return next(new AppError("Please login to get access", 401));
+  }
+
+  const tokenDetail = jwt.verify(idToken, process.env.JWT_SECRET_KEY);
+
+  const freshUser = await user.findByPk(tokenDetail.id);
+
+  if (!freshUser) {
+    return next(new AppError("User no longer exist", 400));
+  }
+
+  req.user = freshUser;
+  return next();
+});
+
+const restrictTo = (...userType) => {
+  const checkPermission = (req, res, next) => {
+    if (!userType.includes(req.user.userType)) {
+      return next(new AppError("Permission denied", 403));
+    }
+    return next();
+  };
+
+  return checkPermission;
+};
+
+module.exports = { signUp, login, authentication, restrictTo };

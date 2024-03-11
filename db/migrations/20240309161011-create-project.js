@@ -44,8 +44,9 @@ module.exports = {
       tags: {
         type: Sequelize.ARRAY(Sequelize.STRING),
       },
-      createBy: {
+      createdBy: {
         type: Sequelize.INTEGER,
+        allowNull: true,
         references: {
           model: "user",
           key: "id",
@@ -59,7 +60,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
       },
-      deleteAt: {
+      deletedAt: {
         type: Sequelize.DATE,
       },
     });
