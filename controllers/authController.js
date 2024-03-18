@@ -47,27 +47,33 @@ const signUp = catchAsync(async (req, res, next) => {
 });
 
 const login = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
+  
+    if (!email || !password) {
+      return next(new AppError("Email and password are required", 400));
+    }
 
-  if (!email || !password) {
-    return next(new AppError("Email and password are required", 400));
+  
+    const result = await user.findOne({ where: { email } });
+  
+    if (!result || !(await bcrypt.compare(password, result.password))) {
+      return next(new AppError("Invalid email or password", 400));
+    }
+  
+    const token = generateToken({
+      id: result.id,
+    });
+  
+    return res.json({
+      status: "success",
+      message: "Login successful",
+      token,
+    });
+    
+  } catch (error) {
+    console.log(error)
   }
-
-  const result = await user.findOne({ where: { email } });
-
-  if (!result || !(await bcrypt.compare(password, result.password))) {
-    return next(new AppError("Invalid email or password", 400));
-  }
-
-  const token = generateToken({
-    id: result.id,
-  });
-
-  return res.json({
-    status: "success",
-    message: "Login successful",
-    token,
-  });
 });
 
 const authentication = catchAsync(async (req, res, next) => {

@@ -18,7 +18,7 @@ app.use("/api/v1/user", userRouter);
 
 app.use(
   "*",
-  catchAsync(async (req, res, next) => {
+  catchAsync(async (req, _res, _next) => {
     throw new AppError(`Can find ${req.originalUrl} on this server`, 404);
   })
 );
